@@ -1,5 +1,7 @@
 #@ load("@ytt:data", "data")
-#@ def uaa_config_file():
+#@ load("@ytt:yaml", "yaml")
+
+#@ def config():
 ---
 name: uaa
 database:
@@ -302,3 +304,13 @@ smtp:
   starttls: false
   user:
 #@ end
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: uaa-config
+  annotations:
+    kapp.k14s.io/versioned: ""
+data:
+  uaa.yml: #@ yaml.encode(config())

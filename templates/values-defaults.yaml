@@ -10,7 +10,11 @@ database:
   port: 5432
   schema: uaa
   username: postgres
+  password: null
+
+encryption_passphrase: null
 
 uri: http://127.0.0.1:8080
+
 cert_manager:
   ca_reference: ca-issuer
