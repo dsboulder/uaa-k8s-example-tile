@@ -1,0 +1,23 @@
+#@ load("@ytt:data", "data")
+---
+apiVersion: cert-manager.io/v1alpha2
+kind: Certificate
+metadata:
+  name: uaa-saml-cert
+spec:
+  secretName: uaa-saml-cert-secret
+  issuerRef:
+    kind: ClusterIssuer
+    name: #@ data.values.cert_manager.ca_reference
+  commonName: localhost
+---
+apiVersion: cert-manager.io/v1alpha2
+kind: Certificate
+metadata:
+  name: uaa-signing-key
+spec:
+  secretName: uaa-signing-key-secret
+  issuerRef:
+    kind: ClusterIssuer
+    name: #@ data.values.cert_manager.ca_reference
+  commonName: fake-jwt

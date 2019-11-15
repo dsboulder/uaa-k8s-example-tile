@@ -1,0 +1,98 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:yaml", "yaml")
+#@ load("@ytt:base64", "base64")
+
+#@ load("uaa.lib.yml", "uaa_config_file")
+
+#@ def labels():
+app: uaa
+#@ end
+
+#@ def uaa_secret(env_name, key_name):
+name: #@ env_name
+valueFrom:
+  secretKeyRef:
+    name: uaa-secrets
+    key: #@ key_name
+#@ end
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: uaa-deployment
+  labels: #@ labels()
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: uaa
+  template:
+    metadata:
+      labels: #@ labels()
+    spec:
+      containers:
+      - name: uaa
+        image: #@ "{}/uaa{}".format(data.values.repository, data.values.image_suffix.uaa)
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: uaa-config-volume
+          mountPath: /uaa
+        env:
+        - #@ uaa_secret("DB_ENV_USER", "db_username")
+        - #@ uaa_secret("DB_ENV_PASS", "db_password")
+        - #@ uaa_secret("ENCRYPTION_PASSPHRASE", "encryption_passphrase")
+        - name: JWT_SIGNING_KEY
+          valueFrom:
+            secretKeyRef:
+              name: uaa-signing-key-secret
+              key: tls.key
+        - name: SAML_PROVIDER_CERT
+          valueFrom:
+            secretKeyRef:
+              name: uaa-saml-cert-secret
+              key: tls.crt
+        - name: SAML_PROVIDER_KEY
+          valueFrom:
+            secretKeyRef:
+              name: uaa-saml-cert-secret
+              key: tls.key
+      volumes:
+      - name: uaa-config-volume
+        configMap:
+          name: uaa-config
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: uaa-service
+spec:
+  selector: #@ labels()
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: uaa-config
+  labels: #@ labels()
+  annotations:
+    kapp.k14s.io/versioned: ""
+data:
+  uaa.yml: #@ yaml.encode(uaa_config_file())
+  thisFileCameFromConfigMap: "yes!"
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: uaa-secrets
+type: Opaque
+data:
+  db_username: #@ base64.encode(data.values.database.username)
+  db_password: #@ base64.encode(data.values.database.password)
+  encryption_passphrase: #@ base64.encode(data.values.encryption_passphrase)

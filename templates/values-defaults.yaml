@@ -1,0 +1,16 @@
+#@data/values
+---
+image_suffix:
+  uaa: "@sha256:08553948157b662b8f439fd528044eddcc55dd028c598342ff013848c569dd48"
+
+repository: docker.io/dsboulder
+
+database:
+  host: localhost
+  port: 5432
+  schema: uaa
+  username: postgres
+
+uri: http://127.0.0.1:8080
+cert_manager:
+  ca_reference: ca-issuer
