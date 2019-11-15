@@ -2,12 +2,8 @@
 ---
 database:
   host: 35.239.238.137
-  #@overlay/match missing_ok=True
   password: "Password1"
 
-#@overlay/match missing_ok=True
 encryption_passphrase: "hfjkdghjkdfhjkdsfhjk1"
 
 uri: http://uaa.local:8080
-
-#! repository: gcr.io/stevenson-cf
