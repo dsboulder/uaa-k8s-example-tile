@@ -1,18 +1,7 @@
 #@ load("@ytt:data", "data")
+#@ load("@ytt:yaml", "yaml")
 
-#@ def pod_labels():
-app: uaa
-#@ end
-
-#@ def secret(env_name, key_name):
-name: #@ env_name
-valueFrom:
-  secretKeyRef:
-    name: uaa-secrets
-    key: #@ key_name
-#@ end
-
-#@ def config_file():
+#@ def config():
 ---
 name: uaa
 database:
@@ -315,3 +304,13 @@ smtp:
   starttls: false
   user:
 #@ end
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: uaa-config
+  annotations:
+    kapp.k14s.io/versioned: ""
+data:
+  uaa.yml: #@ yaml.encode(config())
